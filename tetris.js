@@ -84,11 +84,13 @@ class Tetris{
     }
     moveRight(){
         if(this.checkRight()){
+            isMoving = true
             this.x++
         }
     }
     moveLeft(){
         if(this.checkLeft()){
+            isMoving = true
             this.x--
         }
     }
@@ -175,6 +177,7 @@ class Tetris{
 
 const sourceSquareSize = 24;
 const BlockSize = 40;
+const KeySetButtons =document.getElementsByName("SetKey")
 const ScoreText = document.getElementById("Score")
 const DifficultyText = document.getElementById("Difficulty")
 const VolumeText= document.getElementById("Volume")
@@ -204,7 +207,37 @@ let nextShape;
 let FirstPatten = [];
 let ShapeCount = 0;
 let Score = 0
-let AudioVolume = 10
+let AudioVolume = 0
+let Keys = {
+    方塊逆轉: {Key:"Z",Value: 90},
+    方塊順轉: {Key:"X",Value: 88},
+    儲存方塊: {Key:"C",Value: 67},
+  };
+let IsSettingKey = -1
+for (let i = 0; i<KeySetButtons.length;i++) {
+    KeySetButtons[i].addEventListener('click', ()=>{
+        if(!IsGameStart){
+            // console.log( i+":"+ KeySetButtons[i].id);
+            if(IsSettingKey==-1){
+                if(KeySetButtons[i].value!=="..."){
+                    KeySetButtons[i].value = "..."
+                    IsSettingKey = i
+                }
+            }
+            else{
+                if(i!=IsSettingKey)
+                    alert("請先完成" + KeySetButtons[IsSettingKey].id + "的設置")
+                else{
+                    console.log("Finish" + Keys[KeySetButtons[i].id].Key + ":" + Keys[KeySetButtons[i].id].Value);
+                    KeySetButtons[i].style.background  = "#f0f0f0"
+                    KeySetButtons[i].value = Keys[KeySetButtons[i].id].Key
+                    IsSettingKey = -1
+                }
+            }
+        }
+        else IsSettingKey = -1;
+    });
+}
 let SetBGM = (AudioFile)=>{
     const audio = new Audio(AudioFile);
     audio.volume = AudioVolume/100
@@ -229,14 +262,23 @@ let gameLoop = ()=>{
     GameThread = setInterval(update, 1000/Speed);
     setInterval(draw, 1000/FPS);
 }
-
+let isMoving = false
+let MovingCount = 0
+const MovingCountLimit = 2
 let update = ()=>{
     if(IsGameStart){
         if(IsGameOver)return
         if(currentShape.checkBottom())
-                currentShape.y++
+            currentShape.y++
         else {
-            CheckCompleteRows()
+            if(!isMoving) CheckCompleteRows()
+            else {
+                if(++MovingCount>=MovingCountLimit) {
+                    CheckCompleteRows()
+                    MovingCount = 0
+                }
+            }
+            isMoving = false
         }
     }
 }
@@ -394,10 +436,11 @@ let getRandomShape = () => {
     }
     let templates = [
         [
+            [1,1,0],
             [0,1,0],
-            [0,1,0],
-            [1,1,0]
+            [0,1,0]
         ],
+        
         [
             [0,1,0,0],
             [0,1,0,0],
@@ -405,9 +448,9 @@ let getRandomShape = () => {
             [0,1,0,0]
         ],
         [
-            [1,1,0],
             [0,1,0],
-            [0,1,0]
+            [0,1,0],
+            [1,1,0]
         ],
         [
             [0,0,0],
@@ -635,86 +678,100 @@ let Reset = ()=>{
     IsGameOver = false;
 }
 window.addEventListener("keydown", (e) =>{
-    // console.log(e.keyCode);
-    switch(e.keyCode){
-        case 98:
-        case 50:
-            AudioVolume =(AudioVolume>0)? AudioVolume - 5 : 0
-            ResetBGMVolume();
-            break;
-        case 104:
-        case 56:
-            AudioVolume =(AudioVolume<100)? AudioVolume + 5 : 100
-            ResetBGMVolume();
-            break;
-        case 100:
-        case 52:
-            Speed =(Speed>1)? Speed - 1 : 1
-            clearInterval(GameThread);
-            GameThread = setInterval(update, 1000/Speed);
-            break;
-        case 102:
-        case 54:
-            Speed =(Speed<10)? Speed + 1 : 10
-            clearInterval(GameThread);
-            GameThread = setInterval(update, 1000/Speed);
-            break;
-        case 37:
-        case 65:
-            if(IsGameStart && !IsGameOver) currentShape.moveLeft();
-            break;
-        case 38:
-        case 87:
-        case 90:
-            if(IsGameStart && !IsGameOver) currentShape.changeRotation(false);
-            break;
-        case 88:
-            if(IsGameStart && !IsGameOver) currentShape.changeRotation(true);
-            break;
-        case 39:
-        case 68:
-            if(IsGameStart && !IsGameOver) currentShape.moveRight();
-            break;
-        case 40:
-        case 83:
-            if(IsGameStart && !IsGameOver) currentShape.moveBottom();
-            break; 
-        case 67:
-            if(IsGameStart && !IsGameOver) {
-                if(!ChangeLock){
-                    let tempShape = storeShape;
-                    storeShape = currentShape
-                    if(tempShape!==null) {
-                        tempShape.x = currentShape.x
-                        tempShape.y = currentShape.y
-                        while(tempShape.checkCollsion(tempShape.template))
-                            tempShape.y--      
-                        currentShape = tempShape
-                        
-                    }
-                    else{
-                        currentShape = nextShape
-                        nextShape = getRandomShape()
-                    }
-                    ChangeLock = true
-                }
-            }
-            break;  
-        case 32:
-            if(IsGameStart && !IsGameOver) {
-                while(currentShape.checkBottom()) currentShape.moveBottom();
-                CheckCompleteRows()
-            }
-            break;  
-        case 13:
-            if(!IsGameStart)
-                CheckGameStart()
-            else 
-                if(IsGameOver)
-                    Reset()
-            break;  
-        default: break;
+    console.log(e.keyCode);
+    if(IsSettingKey!=-1 &&!IsGameStart){
+        const usedKeyCodes = [98,50,104,56,100,52,102,54,37,65,38,87,39,68,40,83,32,13]
+        if(!usedKeyCodes.includes(e.keyCode)){
+            Keys[KeySetButtons[IsSettingKey].id].Key = e.key.toUpperCase()
+            Keys[KeySetButtons[IsSettingKey].id].Value = e.keyCode
+            KeySetButtons[IsSettingKey].style.background  = "#ffff00"
+            KeySetButtons[IsSettingKey].value = e.key.toUpperCase()
+        }
+        else{
+            alert("該按鍵無法設置")
+        }
     }
+    else{
+        switch(e.keyCode){
+            case 98:
+            case 50:
+                AudioVolume =(AudioVolume>0)? AudioVolume - 5 : 0
+                ResetBGMVolume();
+                break;
+            case 104:
+            case 56:
+                AudioVolume =(AudioVolume<100)? AudioVolume + 5 : 100
+                ResetBGMVolume();
+                break;
+            case 100:
+            case 52:
+                Speed =(Speed>1)? Speed - 1 : 1
+                clearInterval(GameThread);
+                GameThread = setInterval(update, 1000/Speed);
+                break;
+            case 102:
+            case 54:
+                Speed =(Speed<10)? Speed + 1 : 10
+                clearInterval(GameThread);
+                GameThread = setInterval(update, 1000/Speed);
+                break;
+            case 37:
+            case 65:
+                if(IsGameStart && !IsGameOver) currentShape.moveLeft();
+                break;
+            case Keys[KeySetButtons[0].id].Value :
+                if(IsGameStart && !IsGameOver) currentShape.changeRotation(true);
+                break;
+            case 38:
+            case 87:
+            case Keys[KeySetButtons[1].id].Value :
+                if(IsGameStart && !IsGameOver) currentShape.changeRotation(false);    
+                break;
+            case 39:
+            case 68:
+                if(IsGameStart && !IsGameOver) currentShape.moveRight();
+                break;
+            case 40:
+            case 83:
+                if(IsGameStart && !IsGameOver) currentShape.moveBottom();
+                break; 
+            case Keys[KeySetButtons[2].id].Value :
+                if(IsGameStart && !IsGameOver) {
+                    if(!ChangeLock){
+                        let tempShape = storeShape;
+                        storeShape = currentShape
+                        if(tempShape!==null) {
+                            tempShape.x = currentShape.x
+                            tempShape.y = currentShape.y
+                            while(tempShape.checkCollsion(tempShape.template))
+                                tempShape.y--      
+                            currentShape = tempShape
+                        }
+                        else{
+                            currentShape = nextShape
+                            nextShape = getRandomShape()
+                        }
+                        ChangeLock = true
+                    }
+                }
+                break;  
+            case 32:
+                if(IsGameStart && !IsGameOver) {
+                    while(currentShape.checkBottom()) currentShape.moveBottom();
+                    CheckCompleteRows()
+                }
+                break;  
+            case 13:
+                if(!IsGameStart)
+                    CheckGameStart()
+                else 
+                    if(IsGameOver)
+                        Reset()
+                break;  
+            default: break;
+        }
+    }
+    
 })
 
 gameLoop();
