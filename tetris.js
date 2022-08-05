@@ -204,7 +204,7 @@ let nextShape;
 let FirstPatten = [];
 let ShapeCount = 0;
 let Score = 0
-let AudioVolume = 0
+let AudioVolume = 10
 let SetBGM = (AudioFile)=>{
     const audio = new Audio(AudioFile);
     audio.volume = AudioVolume/100
