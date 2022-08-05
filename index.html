@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>俄羅斯方塊DEMO</title>
+        <style type="text/css">
+            .Block1 {
+                margin: 10px 10px 10px 10px;
+                margin-left: auto;
+                display: block;
+            }
+            .Block2 {
+                margin: 10px 10px 10px 10px;
+                display: block;
+            }
+            .Block3 {
+                margin: 10px 10px 10px 10px;
+                margin-right: auto;
+                display: block;
+            }
+        
+            .container{
+                display: -webkit-box; 
+            }
+            </style>
+    </head>
+    <body>
+        
+        
+        <div class= "container" >
+            <div class="Block1">
+                <canvas id="StoreCanvas" height="160" width="160"></canvas>
+                <h2>Stored Block</h2>
+                <h2 id="Score">目前得分：</h2>
+                <h2 id="Difficulty">目前難度：</h2>
+                <h2 id="Volume">目前音量：</h2>
+            </div>
+            <div class="Block2">
+                <canvas id="MainCanvas" height="800" width="400"></canvas>
+            </div>
+            <div class="Block3">
+                <canvas id="NextCanvas" height="160" width="160"></canvas>
+                <div>
+                    <h2>Next Block</h2>
+                    <p>操作說明：</p>
+                    <p>↑、W：方塊逆轉</p>
+                    <p>←、A：向左移動</p>
+                    <p>↓、S：向下移動</p>
+                    <p>→、D：向右移動</p>
+                    <p>Z：方塊逆轉</p>
+                    <p>X：方塊順轉</p>
+                    <p>C：儲存方塊</p>
+                    <p>Space：墜落</p>
+                    <p>8：音量增加</p>
+                    <p>2：音量減少</p>
+                    <p>6：難度增加</p>
+                    <p>4：難度減少</p>
+                    <p>按下Play或是Enter開始遊戲</p>
+                </div>
+            </div>
+            
+            
+        </div>
+        
+        <img src="rotations.png" id="source" style="display: none" />
+        <img src="play.png" id="play" style="display: none" />
+        <img src="gameover.png" id="gameover" style="display: none" />
+        <script src="tetris.js"></script>
+    </body>
+</html>
