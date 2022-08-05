@@ -207,7 +207,7 @@ let nextShape;
 let FirstPatten = [];
 let ShapeCount = 0;
 let Score = 0
-let AudioVolume = 0
+let AudioVolume = 5
 let Keys = {
     方塊逆轉: {Key:"Z",Value: 90},
     方塊順轉: {Key:"X",Value: 88},
